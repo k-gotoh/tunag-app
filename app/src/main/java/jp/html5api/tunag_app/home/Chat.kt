@@ -179,8 +179,8 @@ fun DrawTime(message: String) {
         try {
             message.split("/").map{dt += it + ymd[i++]}
         } catch (e: Exception) {
-//            dt = ""
-            // せっかくなので月までとかでも表示する
+//            dt = "error"
+            // せっかくなので年や月までとかでも表示する
             /* no-op */
         }
 
