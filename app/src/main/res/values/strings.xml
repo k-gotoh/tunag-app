@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">TUNAG-App</string>
+    <string name="input_message">メッセージ：</string>
+    <string name="header_title_talk">会話</string>
+    <string name="header_title_login">ログイン</string>
+    <string name="header_title_singup">アカウント登録</string>
+
+    <string name="button_login">LOGIN</string>
+
+    <string name="title_input_user_and_pw">USERとPASSWORDを入力してください</string>
+    <string name="title_input_user_and_pw_conf">USERとPASSWORD/確認用を入力してください</string>
+
+    <string name="default_notification_channel_id">fcm_default_channel</string>
+    <string name="default_notification_channel_name">デフォルトの通知</string>
+
 </resources>

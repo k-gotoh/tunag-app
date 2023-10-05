@@ -2,10 +2,8 @@ package jp.html5api.tunag_app.home
 
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
@@ -16,7 +14,7 @@ import androidx.compose.ui.res.painterResource
 import jp.html5api.tunag_app.R
 
 @Composable
-fun splash() {
+fun Splash() {
     Row(
         modifier = Modifier.fillMaxSize().background(Color(0xff00aac2)),
         horizontalArrangement = Arrangement.Center,

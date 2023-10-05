@@ -31,9 +31,11 @@ class MainActivity : ComponentActivity() {
 
 
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "login") {
-                    composable("splash") { splash(/*...*/) }
-                    composable("login") { login(/*...*/) }
+                NavHost(navController = navController, startDestination = "chat") {
+                    composable("splash") { Splash(/*...*/) }
+                    composable("login") { Login(/*...*/) }
+                    composable("signUp") { SignUp(/*...*/) }
+                    composable("chat") { Chat(/*...*/) }
                 }
             }
         }
@@ -46,6 +48,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TunagPreview() {
     TUNAGAppTheme {
-        login()
+        Login()
     }
 }
