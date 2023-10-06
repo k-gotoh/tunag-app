@@ -1,6 +1,9 @@
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+//    id("org.jetbrains.kotlin.kapt")
+    id("com.google.devtools.ksp")
 
 }
 
@@ -11,7 +14,7 @@ android {
     defaultConfig {
         applicationId = "jp.html5api.tunag_app"
         minSdk = 30
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -48,21 +51,26 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-}
 
+}
+kotlin {
+    jvmToolchain(8)
+}
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
-    implementation("androidx.activity:activity-compose:1.7.0")
+
+    implementation("androidx.core:core-ktx:1.12.0")
+
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("androidx.activity:activity-compose:1.8.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:+")
-    implementation ("androidx.navigation:navigation-compose:+")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:")
+    implementation ("androidx.navigation:navigation-compose:2.7.4")
 
 
     testImplementation("junit:junit:4.13.2")
@@ -73,5 +81,12 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    implementation("com.google.android.datatransport:transport-runtime:3.1.9")
+
+//    implementation ("androidx.lifecycle:lifecycle-extensions:2.5.2")
+//    annotationProcessor ("androidx.lifecycle:lifecycle-compiler:2.5.2")
+    implementation ("androidx.room:room-runtime:2.5.2")
+    ksp ("androidx.room:room-compiler:2.5.2")
+    implementation ("androidx.room:room-ktx:2.5.2")
 
 }
