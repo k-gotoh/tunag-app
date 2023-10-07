@@ -1,10 +1,7 @@
 package jp.html5api.tunag_app.home
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.ClickableText
@@ -26,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,18 +36,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import jp.html5api.tunag_app.R
-import jp.html5api.tunag_app.data.Talk
 import jp.html5api.tunag_app.data.TalkEntity
-import jp.html5api.tunag_app.data.db.AppDatabase
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 
-
+@SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Chat(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit = { _ ->} ) {
+fun TalkScreen(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit = { _ -> }) {
 
 
     val bgImg = ContextCompat.getDrawable(
@@ -61,8 +55,11 @@ fun Chat(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit = { _
     var inputMessage by remember { mutableStateOf("") }
 //    var talkList = talks
 
+
     Column(modifier = Modifier.fillMaxSize()) {
         showTopAppBar(title = stringResource(id = R.string.header_title_talk))
+        val listState = rememberLazyListState()
+        val a = rememberUpdatedState(newValue = talks.size)
 
         LazyColumn(
             userScrollEnabled = true,
@@ -84,8 +81,10 @@ fun Chat(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit = { _
 
             }
         }
-        Row (verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(Color(0xff00aac2)))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.background(Color(0xff00aac2))
+        )
         {
 
             OutlinedTextField(
@@ -93,26 +92,27 @@ fun Chat(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit = { _
                 onValueChange = { inputMessage = it },
                 modifier = Modifier
                     .weight(1.0f)
-                    .background(Color.White))
+                    .background(Color.White)
+            )
             ClickableText(
-            text = AnnotatedString(stringResource(id = R.string.input_message)
+                text = AnnotatedString(
+                    stringResource(id = R.string.input_message)
                 ),
-            onClick = {
-                val cal = Calendar.getInstance();
-                val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
-                val result = sdf.format(cal.getTime())
-                val data = TalkEntity(0, "me", "", result, inputMessage)
-                talks.add(data)
-                // todo どうやって表示を動的に変更するか？
+                onClick = {
+                    val cal = Calendar.getInstance();
+                    val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
+                    val result = sdf.format(cal.getTime())
+                    val data = TalkEntity(0, "me", "", result, inputMessage)
+                    talks.add(data)
+                    // todo どうやって表示を動的に変更するか？
 
-                onTalkClick (data)
-            }
+                    onTalkClick(data)
+                }
 
             )
         }
     }
 }
-
 
 
 @Composable
@@ -161,20 +161,22 @@ fun DrawTime(message: String) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+    ) {
         var dt = ""
         var i = 0
         val ymd = listOf("年", "月", "日")
         try {
-            message.split("/").map{dt += it + ymd[i++]}
+            message.split("/").map { dt += it + ymd[i++] }
         } catch (e: Exception) {
 //            dt = "error"
             // せっかくなので年や月までとかでも表示する
             /* no-op */
         }
 
-        Text("---------- $dt ----------",
+        Text(
+            "---------- $dt ----------",
             fontSize = 12.sp,
-            color = Color.Magenta)
+            color = Color.Magenta
+        )
     }
 }

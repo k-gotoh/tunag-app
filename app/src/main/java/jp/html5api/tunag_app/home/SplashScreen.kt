@@ -14,7 +14,7 @@ import androidx.compose.ui.res.painterResource
 import jp.html5api.tunag_app.R
 
 @Composable
-fun Splash() {
+fun SplashScreen() {
     Row(
         modifier = Modifier.fillMaxSize().background(Color(0xff00aac2)),
         horizontalArrangement = Arrangement.Center,

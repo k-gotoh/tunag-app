@@ -29,7 +29,7 @@ import jp.html5api.tunag_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUp() {
+fun SignUpScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
         var id by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }

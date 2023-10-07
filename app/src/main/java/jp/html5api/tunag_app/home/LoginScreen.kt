@@ -32,7 +32,7 @@ import jp.html5api.tunag_app.R
 
 
 @Composable
-fun Login() {
+fun LoginScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
         var id by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }

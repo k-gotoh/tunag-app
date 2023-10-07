@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import jp.html5api.tunag_app.R
 import jp.html5api.tunag_app.data.TalkEntity
 import jp.html5api.tunag_app.data.db.AppDatabase
+import jp.html5api.tunag_app.data.db.TalkDao
 import kotlin.coroutines.coroutineContext
 
 class MainActivity : ComponentActivity() {
@@ -30,8 +31,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val database = AppDatabase.getInstance(this)
         val talkDao = database.talkDao()
-        val talkList: MutableList<TalkEntity> = talkDao.getTalk()
 
+        // テストデータ作成
+//        insertTestData(talkDao)
+
+        val talkList = talkDao.getTalk()
         setContent {
             TUNAGAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -44,37 +48,14 @@ class MainActivity : ComponentActivity() {
 
 
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "chat") {
-                    composable("splash") { Splash(/*...*/) }
-                    composable("login") { Login() }
-                    composable("signUp") { SignUp() }
-                    composable("chat") { Chat(talkList) { push(it) } }
+                NavHost(navController = navController, startDestination = "talk") {
+                    composable("splash") { SplashScreen(/*...*/) }
+                    composable("login") { LoginScreen() }
+                    composable("signUp") { SignUpScreen() }
+                    composable("talk") { TalkScreen(talkList) { push(it) } }
                 }
             }
         }
-
-//        val inp= listOf(
-//            TalkEntity(0,"","","2023/10/03 18:01:25","わかった"),
-//            TalkEntity(0,"12345","","2023/10/03 18:05:11","さっきの件"),
-//            TalkEntity(0,"12345","","2023/10/03 18:05:15","忘れないようにね"),
-//            TalkEntity(0,"","","2023/10/03 18:25:11","はいじゃあ明日"),
-//            TalkEntity(0,"","","2023/10/04 18:25:11","あの後大変だったよ"),
-//            TalkEntity(0,"12345","","2023/10/04 22:17:11","どした？"),
-//            TalkEntity(0,"","","2023/10/04 22:18:11","いやぁ、歩いてたらハクビシンに\n突然噛まれた"),
-//            TalkEntity(0,"12345","","2023/10/04 22:19:11","えぇぇぇ、まじかよ大丈夫なん"),
-//            TalkEntity(0,"","","2023/10/04 22:20:11","うんへーき"),
-//            TalkEntity(0,"12345","","2023/10/04 22:21:11","よかったねー"),
-//            TalkEntity(0,"","","2023/10/04 25:19:11","指が3本もげただけ"),
-//            TalkEntity(0,"12345","","2023/10/04 22:24:11","え？"),
-//            TalkEntity(0,"12345","","2023/10/04 25:19:11","えええええええええええええええええ")
-//
-//        )
-//
-//
-//        for (data in inp) {
-//            talkDao.insert(data)
-//        }
-
 
 
         val CHANNEL_ID = "channel_id"
@@ -118,6 +99,26 @@ class MainActivity : ComponentActivity() {
 //            }
     }
 
+    private fun insertTestData(talkDao: TalkDao) {
+        val insertList = listOf(
+            TalkEntity(0, "", "", "2023/10/03 18:01:25", "わかった"),
+            TalkEntity(0, "12345", "", "2023/10/03 18:05:11", "さっきの件"),
+            TalkEntity(0, "12345", "", "2023/10/03 18:05:15", "忘れないようにね"),
+            TalkEntity(0, "", "", "2023/10/03 18:25:11", "はいじゃあ明日"),
+            TalkEntity(0, "", "", "2023/10/04 18:25:11", "あの後大変だったよ"),
+            TalkEntity(0, "12345", "", "2023/10/04 22:17:11", "どした？"),
+            TalkEntity(0, "", "", "2023/10/04 22:18:11", "いやぁ、歩いてたらハクビシンに\n突然噛まれた"),
+            TalkEntity(0, "12345", "", "2023/10/04 22:19:11", "えぇぇぇ、まじかよ大丈夫なん"),
+            TalkEntity(0, "", "", "2023/10/04 22:20:11", "うんへーき"),
+            TalkEntity(0, "12345", "", "2023/10/04 22:21:11", "よかったねー"),
+            TalkEntity(0, "", "", "2023/10/04 25:19:11", "指が3本もげただけ"),
+            TalkEntity(0, "12345", "", "2023/10/04 22:24:11", "え？"),
+            TalkEntity(0, "12345", "", "2023/10/04 25:19:11", "えええええええええええええええええ")
+        )
+        for (data in insertList) {
+            talkDao.insert(data)
+        }
+    }
 
     private fun push(talkEntity: TalkEntity) {
 //        talkDao.insert(talkEntity)
@@ -127,7 +128,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun TunagPreview() {
         TUNAGAppTheme {
-            Login()
+            LoginScreen()
         }
     }
 }
