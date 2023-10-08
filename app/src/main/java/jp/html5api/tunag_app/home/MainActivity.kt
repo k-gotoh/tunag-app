@@ -38,21 +38,13 @@ class MainActivity : ComponentActivity() {
         val talkList = talkDao.getTalk()
         setContent {
             TUNAGAppTheme {
-                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    Greeting("Android")
-//                }
-
 
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "talk") {
                     composable("splash") { SplashScreen(/*...*/) }
                     composable("login") { LoginScreen() }
                     composable("signUp") { SignUpScreen() }
-                    composable("talk") { TalkScreen(talkList) { push(it) } }
+                    composable("talk") { TalkScreen(talkList) { push(talkDao, it) } }
                 }
             }
         }
@@ -120,8 +112,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun push(talkEntity: TalkEntity) {
-//        talkDao.insert(talkEntity)
+    private fun push(talkDao: TalkDao, talkEntity: TalkEntity) {
+        talkDao.insert(talkEntity)
     }
 
     @Preview(showBackground = true)

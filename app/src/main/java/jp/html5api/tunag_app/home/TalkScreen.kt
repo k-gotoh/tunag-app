@@ -1,6 +1,7 @@
 package jp.html5api.tunag_app.home
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -43,7 +48,7 @@ import java.util.Calendar
 
 
 @SuppressLint("SimpleDateFormat")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TalkScreen(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit = { _ -> }) {
 
@@ -59,9 +64,11 @@ fun TalkScreen(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit
     Column(modifier = Modifier.fillMaxSize()) {
         showTopAppBar(title = stringResource(id = R.string.header_title_talk))
         val listState = rememberLazyListState()
-        val a = rememberUpdatedState(newValue = talks.size)
-
+        LaunchedEffect(talks.size) {
+            listState.animateScrollToItem(talks.size)
+        }
         LazyColumn(
+            state = listState,
             userScrollEnabled = true,
             modifier = Modifier
                 .fillMaxSize()
@@ -94,20 +101,24 @@ fun TalkScreen(talks: MutableList<TalkEntity>, onTalkClick: (TalkEntity) -> Unit
                     .weight(1.0f)
                     .background(Color.White)
             )
+
             ClickableText(
                 text = AnnotatedString(
-                    stringResource(id = R.string.input_message)
+                    stringResource(id = R.string.input_message),
                 ),
+                style = TextStyle(color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold),
                 onClick = {
                     val cal = Calendar.getInstance();
                     val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
                     val result = sdf.format(cal.getTime())
-                    val data = TalkEntity(0, "me", "", result, inputMessage)
+                    val data = TalkEntity(0, "", "", result, inputMessage)
                     talks.add(data)
-                    // todo どうやって表示を動的に変更するか？
-
                     onTalkClick(data)
-                }
+                    inputMessage = ""
+                },
+                maxLines = 1,
 
             )
         }
