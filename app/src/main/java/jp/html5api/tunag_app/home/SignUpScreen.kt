@@ -26,15 +26,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import jp.html5api.tunag_app.R
+import jp.html5api.tunag_app.model.ApiRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(onSignUpClick: (ApiRequest) -> Unit = { _ -> }) {
     Column(modifier = Modifier.fillMaxSize()) {
         var id by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var password2 by remember { mutableStateOf("") }
-        showTopAppBar(stringResource(id = R.string.header_title_singup))
+        ShowTopAppBar(stringResource(id = R.string.header_title_singup)) {}
         Text(
             stringResource(id = R.string.title_input_user_and_pw_conf),
             Modifier
@@ -86,7 +87,7 @@ fun SignUpScreen() {
             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd
         ) {
             Button(
-                onClick = {},
+                onClick = { onSignUpClick(ApiRequest(id, password)) },
                 modifier = Modifier
                     .padding(5.dp)
                     .offset((-60).dp, 40.dp),

@@ -5,6 +5,8 @@ plugins {
 //    id("org.jetbrains.kotlin.kapt")
     id("com.google.devtools.ksp")
 
+    id ("com.google.gms.google-services")
+
 }
 
 android {
@@ -31,6 +33,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            debug {
+                kotlinOptions {
+                    jvmTarget = "11"
+                }
+            }
         }
     }
     compileOptions {
@@ -88,5 +95,11 @@ dependencies {
     implementation ("androidx.room:room-runtime:2.5.2")
     ksp ("androidx.room:room-compiler:2.5.2")
     implementation ("androidx.room:room-ktx:2.5.2")
+
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation ("com.google.firebase:firebase-bom:32.3.1")
+    implementation ("com.google.firebase:firebase-messaging-ktx:23.2.1")
 
 }

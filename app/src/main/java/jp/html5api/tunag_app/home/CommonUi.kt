@@ -16,11 +16,11 @@ import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun showTopAppBar(title:String) {
+fun ShowTopAppBar(title:String, onUpClick:() -> Unit = {}) {
     CenterAlignedTopAppBar(
         title = ( { Text(title, color = Color.White) }),
         navigationIcon = {
-            IconButton(onClick = { /* do something */ }) {
+            IconButton(onClick = { onUpClick()}) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Localized description",
