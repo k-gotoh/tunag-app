@@ -101,5 +101,7 @@ dependencies {
 
     implementation ("com.google.firebase:firebase-bom:32.3.1")
     implementation ("com.google.firebase:firebase-messaging-ktx:23.2.1")
+    implementation ("androidx.security:security-crypto:1.1.0-alpha06")
+
 
 }

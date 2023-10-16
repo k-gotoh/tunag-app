@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -26,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,7 +43,7 @@ import jp.html5api.tunag_app.model.ApiRequest
 
 
 @Composable
-fun LoginScreen(onLoginClick: (ApiRequest) -> Unit = { _ -> }, onPopBack: () -> Unit = {}) {
+fun LoginScreen(onLoginClick: (ApiRequest) -> Unit = { _ -> }, onSignUp : () -> Unit = {},onPopBack: () -> Unit = {}) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         var id by remember { mutableStateOf("") }
@@ -56,16 +61,29 @@ fun LoginScreen(onLoginClick: (ApiRequest) -> Unit = { _ -> }, onPopBack: () -> 
             modifier = Modifier
                 .padding(10.dp)
                 .offset(40.dp, 10.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                containerColor = Color.White
+            ),
             value = id,
             maxLines = 1,
             onValueChange = { id = it },
-            label = { Text("USER") }
+            label = {
+                Text(
+                    "USER",
+                    color = Color.Gray
+                )
+            }
         )
 
         OutlinedTextField(
             modifier = Modifier
                 .padding(10.dp)
                 .offset(40.dp, 0.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                containerColor = Color.White
+            ),
             value = password,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
@@ -74,14 +92,29 @@ fun LoginScreen(onLoginClick: (ApiRequest) -> Unit = { _ -> }, onPopBack: () -> 
             ),
             maxLines = 1,
             onValueChange = { password = it },
-            label = { Text("password") }
+            label = {
+                Text(
+                    "password",
+                    color = Color.Gray
+                )
+            }
+        )
+
+        ClickableText(
+            text = AnnotatedString(text = "新規作成はこちらをタップ"),
+            onClick = {onSignUp()},
+            style = TextStyle(
+                color = Color.Blue,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
         )
 
         Box(
             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd
         ) {
             Button(
-                onClick = { onLoginClick(ApiRequest(id, password)) },
+                onClick = { onLoginClick(ApiRequest(id, password, "", "")) },
                 modifier = Modifier
                     .padding(5.dp)
                     .offset((-60).dp, 40.dp),

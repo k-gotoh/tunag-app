@@ -11,11 +11,11 @@ data class TalkEntity(
     @ColumnInfo(name = "id")
     val id: Int = 0,
 
-    @ColumnInfo(name = "sent_user_id")
-    val sent_user_id: String,
+    @ColumnInfo(name = "room")
+    val room: String,
 
-    @ColumnInfo(name = "recieved_user_id")
-    val recieved_user_id: String,
+    @ColumnInfo(name = "person")
+    val person: String,
 
     @ColumnInfo(name = "dt_talked")
     val dt_talk: String,

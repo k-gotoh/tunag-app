@@ -4,6 +4,7 @@
     <string name="app_name">TUNAG-App</string>
     <string name="input_message">" TALK "</string>
     <string name="header_title_talk">会話</string>
+    <string name="header_friend_list">友人帳</string>
     <string name="header_title_login">ログイン</string>
     <string name="header_title_singup">アカウント登録</string>
 

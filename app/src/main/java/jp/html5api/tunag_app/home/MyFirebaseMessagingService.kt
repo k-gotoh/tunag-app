@@ -45,6 +45,7 @@ class MyFirebaseMessagingService() : FirebaseMessagingService(), Parcelable {
          val sendIntent = Intent(getString(R.string.intent_push)).also {
              it.putExtra("user", pushData.user)
              it.putExtra("message", pushData.message)
+             it.putExtra("name", pushData.name)
          }
         sendBroadcast(sendIntent)
         Log.d("*****", "sendBroadcast ")

@@ -1,6 +1,8 @@
 package jp.html5api.tunag_app.home
 
 
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import jp.html5api.tunag_app.R
 
 @Composable
-fun SplashScreen() {
+fun SplashScreen(onNext: () -> Unit = {}) {
     Row(
         modifier = Modifier.fillMaxSize().background(Color(0xff00aac2)),
         horizontalArrangement = Arrangement.Center,
@@ -23,4 +25,8 @@ fun SplashScreen() {
         Image(painter = painterResource(id = R.drawable.logo),
             contentDescription = null)
     }
+
+    Handler(Looper.getMainLooper()).postDelayed(Runnable {
+        onNext()
+    }, 2000)
 }

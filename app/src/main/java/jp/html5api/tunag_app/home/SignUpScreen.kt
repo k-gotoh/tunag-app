@@ -11,6 +11,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,9 +33,10 @@ import jp.html5api.tunag_app.model.ApiRequest
 @Composable
 fun SignUpScreen(onSignUpClick: (ApiRequest) -> Unit = { _ -> }) {
     Column(modifier = Modifier.fillMaxSize()) {
-        var id by remember { mutableStateOf("") }
+        var user by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var password2 by remember { mutableStateOf("") }
+        var name by remember { mutableStateOf("") }
         ShowTopAppBar(stringResource(id = R.string.header_title_singup)) {}
         Text(
             stringResource(id = R.string.title_input_user_and_pw_conf),
@@ -46,20 +48,28 @@ fun SignUpScreen(onSignUpClick: (ApiRequest) -> Unit = { _ -> }) {
             modifier = Modifier
                 .padding(10.dp)
                 .offset(40.dp, 10.dp),
-            value = id,
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                containerColor = Color.White
+            ),
+            value = user,
             maxLines = 1,
-            onValueChange = { id = it },
-            label = { Text("USER") }
+            onValueChange = { user = it },
+            label = { Text("USER", color = Color.Gray) }
         )
 
         OutlinedTextField(
             modifier = Modifier
                 .padding(10.dp)
                 .offset(40.dp, 0.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                containerColor = Color.White
+            ),
             value = password,
             maxLines = 1,
             onValueChange = { password = it },
-            label = { Text("password") },
+            label = { Text("password", color = Color.Gray) },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
@@ -71,26 +81,41 @@ fun SignUpScreen(onSignUpClick: (ApiRequest) -> Unit = { _ -> }) {
             modifier = Modifier
                 .padding(10.dp)
                 .offset(40.dp, (-20).dp),
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                containerColor = Color.White
+            ),
             value = password2,
             maxLines = 1,
             onValueChange = { password2 = it },
-            label = { Text("passwordの再入力") },
+            label = { Text("passwordの再入力", color = Color.Gray) },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
             )
         )
-
+        OutlinedTextField(
+            modifier = Modifier
+                .padding(10.dp)
+                .offset(40.dp, (-30).dp),
+            value = name,
+            maxLines = 1,
+            onValueChange = { name = it },
+            label = { Text("表示用の名前") }
+        )
 
         Box(
             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd
         ) {
             Button(
-                onClick = { onSignUpClick(ApiRequest(id, password)) },
+                onClick = {
+
+                    onSignUpClick(ApiRequest(user, password, "", name))
+                          },
                 modifier = Modifier
                     .padding(5.dp)
-                    .offset((-60).dp, 40.dp),
+                    .offset((-60).dp, (-20).dp),
                 colors = ButtonDefaults.textButtonColors(
                     containerColor = Color(0xff00aac2),
                     contentColor = Color.White,

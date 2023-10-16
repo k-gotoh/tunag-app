@@ -4,9 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import jp.html5api.tunag_app.data.FriendEntity
 import jp.html5api.tunag_app.data.TalkEntity
 
-@Database(entities = [TalkEntity::class], version = 1)
+@Database(entities = [TalkEntity::class, FriendEntity::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun talkDao(): TalkDao
 

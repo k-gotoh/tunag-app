@@ -11,8 +11,21 @@ interface ApiService {
     @POST("login")
     fun login(@Body body: RequestBody): Call<ResponseBody>
 
+    @POST("getName")
+    fun getName(@Body body: RequestBody): Call<ResponseBody>
+
     @POST("signUp")
     fun signUp(@Body body: RequestBody): Call<ResponseBody>
+
+    @POST("updateToken")
+    fun updateToken(@Body body: RequestBody): Call<ResponseBody>
+
+    @POST("changePassword")
+    fun updatePassword(@Body body: RequestBody): Call<ResponseBody>
+
+    @POST("changeName")
+    fun updateName(@Body body: RequestBody): Call<ResponseBody>
+
 //
 //    @POST("test")
 //    fun test(): Call<ResponseBody>
