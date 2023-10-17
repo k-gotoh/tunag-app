@@ -1,15 +1,19 @@
 package jp.html5api.tunag_app.home
 
+import android.hardware.camera2.params.ColorSpaceTransform
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,12 +30,14 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,6 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,34 +84,116 @@ fun FriendListScreen(
     val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
-        modifier = Modifier.background(Color.White),
+
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet (Modifier.background(Color.LightGray)){
-                Text("ショートカット",color = Color.White, modifier = Modifier.padding(16.dp))
-                Divider()
-                NavigationDrawerItem(
-                    label = { Text(text = "Logout") },
-                    selected = false,
-                    onClick = {
-                        onDrawerItem(1)
-                        scope.launch { drawerState.close() }
+            ModalDrawerSheet ( drawerContainerColor = Color(0xfff8f4e6)){
+//                Text("ショートカット", color = Color.Gray, modifier = Modifier.padding(16.dp), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+//                Divider()
+
+                Column (modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally){
+                    Box (contentAlignment = Alignment.Center){
+                        Image(painter = painterResource(id = R.drawable.logo), contentDescription = null)
+                        Text("Shortcut", fontSize = 30.sp, color = Color(0xff00aac2))
                     }
-                )
-                NavigationDrawerItem(
-                    label = { Text(text = "なんかの機能") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .padding(20.dp, 0.dp)
+                            .border(width = 1.dp, shape = CircleShape, color = Color(0xffffb6c1))
+                            .clickable {
+//                                onDrawerItem(1)
+                                scope.launch { drawerState.close() }
+                            }
+                    ) {
+                        Row() {
+                            Image(painter = painterResource(id = android.R.drawable.ic_delete), contentDescription = null)
+                            Text(
+                                text = "Logout",
+                                color = Color.Gray,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
                     }
-                )
-                NavigationDrawerItem(
-                    label = { Text(text = "なんかの機能") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .padding(20.dp, 0.dp)
+                            .border(width = 1.dp, shape = CircleShape, color = Color.Gray)
+                            .clickable {
+//                                onDrawerItem(1)
+                                scope.launch { drawerState.close() }
+                            }
+                    ) {
+                        Row() {
+                            Image(painter = painterResource(id = android.R.drawable.ic_dialog_email), contentDescription = null)
+                            Text(
+                                text = "なんかの機能１",
+                                color = Color.Gray,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
                     }
-                )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .padding(20.dp, 0.dp)
+
+                            .border(width = 1.dp, shape = CircleShape, color = Color.Gray)
+                            .clickable {
+//                                onDrawerItem(1)
+                                scope.launch { drawerState.close() }
+                            }
+                    ) {
+                        Row() {
+                            Image(painter = painterResource(id = android.R.drawable.ic_input_get), contentDescription = null)
+                            Text(
+                                text = "なんかの機能2",
+                                color = Color.Gray,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                }
+//                NavigationDrawerItem(
+//                    modifier = Modifier.padding(10.dp, 0.dp).,
+//
+//                    label = { Text(text = "Logout", fontSize = 16.sp) },
+//                    selected = false,
+//                    onClick = {
+//                        onDrawerItem(1)
+//                        scope.launch { drawerState.close() }
+//                    }
+//                )
+//                NavigationDrawerItem(
+//                    modifier = Modifier.padding(10.dp, 0.dp),
+//                    label = { Text(text = "なんかの機能", fontSize = 16.sp) },
+//                    selected = false,
+//                    onClick = {
+//                        scope.launch { drawerState.close() }
+//                    }
+//                )
+//                NavigationDrawerItem(
+//                    modifier = Modifier.padding(10.dp, 0.dp),
+//                    label = { Text(text = "なんかの機能", fontSize = 16.sp) },
+//                    selected = false,
+//                    onClick = {
+//                        scope.launch { drawerState.close() }
+//                    }
+//                )
             }
 
         }

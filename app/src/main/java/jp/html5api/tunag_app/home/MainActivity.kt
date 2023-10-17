@@ -7,13 +7,42 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.MainThread
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialogDefaults.containerColor
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -47,6 +76,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import retrofit2.Retrofit
+import java.nio.file.WatchEvent
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import kotlin.coroutines.EmptyCoroutineContext
@@ -57,6 +87,8 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val PREF_NAME = "encrypted_prefs"
     }
+
+    lateinit var broadcast:PushReceiver
 
     private val retrofit = Retrofit.Builder().apply {
 //        baseUrl("http://10.0.2.2:8080/")
@@ -72,6 +104,8 @@ class MainActivity : ComponentActivity() {
         val database = AppDatabase.getInstance(this)
         val talkDao = database.talkDao()
 
+        broadcast = PushReceiver(talkDao)
+
         val me = (applicationContext as TunagApplication).getMe()
 //                val apiRequest = ApiRequest("12345", "","0000")
 //        val request = Gson().toJson(apiRequest)
@@ -80,18 +114,23 @@ class MainActivity : ComponentActivity() {
         val post = service.getName(requestBody)
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.launch {
-            val responseBody = post.execute()
-            responseBody.body()?.let {
-                val strResponse: String = it.string()
-                val response = Gson().fromJson(strResponse, LoginResponse::class.java)
-                if (response.status == 0) {
-                    Log.d("***", " user name:" + response.message);
-                    val token =
-                        (applicationContext as TunagApplication).saveMyName(response.message)
+            try {
+                val responseBody = post.execute()
+                responseBody.body()?.let {
+                    val strResponse: String = it.string()
+                    val response = Gson().fromJson(strResponse, LoginResponse::class.java)
+                    if (response.status == 0) {
+                        Log.d("***", " user name:" + response.message);
+                        val token =
+                            (applicationContext as TunagApplication).saveMyName(response.message)
 
-                } else {
-                    Log.d("****1", "message:" + response.message)
+                    } else {
+                        Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, response.message, Toast.LENGTH_LONG).show()}
+                    }
+
                 }
+            } catch(e:Exception) {
+                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
 
             }
         }
@@ -110,27 +149,17 @@ class MainActivity : ComponentActivity() {
         // テストデータ作成
 //        insertTestData(talkDao)
 
-//        val talkList = talkDao.getTalk()
         val friends = talkDao.getFriends()
-//        talkDao.insert(FriendEntity(0, "gotoh"))
 
         updateFCMToken()
 
-
-        Log.d("****", "registerReceiver")
-        val broadcast =
-            registerReceiver(PushReceiver(talkDao), IntentFilter(getString(R.string.intent_push)))
-
-
-
         setContent {
+            Log.d("****", "setContent")
             TUNAGAppTheme {
-
-
                 val navController: NavHostController = rememberNavController()
-                NavHost(navController = navController, startDestination = "splash") {
+                val startDestination by remember { mutableStateOf("splash") }
+                NavHost(navController = navController, startDestination = startDestination) {
                     composable("splash") { SplashScreen() {
-
                         checkLogin(navController)
                       }}
                     composable("login") {
@@ -169,6 +198,9 @@ class MainActivity : ComponentActivity() {
                             Log.d("***", "onEdit:" + it)
                         }
                     }
+                    composable("tab") { TabScreen() }
+
+
                 }
             }
         }
@@ -216,6 +248,10 @@ class MainActivity : ComponentActivity() {
 //            }
     }
 
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(broadcast)
+    }
     private fun insertTestData(talkDao: TalkDao) {
         val user = "abc"
         val insertList = listOf(
@@ -248,31 +284,36 @@ class MainActivity : ComponentActivity() {
         val post = service.signUp(requestBody)
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.launch {
-            val responseBody = post.execute()
-            responseBody.body()?.let {
-                val strResponse: String = it.string()
-                val response = Gson().fromJson(strResponse, LoginResponse::class.java)
-                if (response.status == 0) {
-                    Log.d("****2", "message:" + response.message)
+            try {
+                val responseBody = post.execute()
+                responseBody.body()?.let {
+                    val strResponse: String = it.string()
+                    val response = Gson().fromJson(strResponse, LoginResponse::class.java)
+                    if (response.status == 0) {
+                        Log.d("****2", "message:" + response.message)
 
-                    (applicationContext as TunagApplication).saveMe(apiRequest.user)
-                    (applicationContext as TunagApplication).saveLogin(true)
+                        (applicationContext as TunagApplication).saveMe(apiRequest.user)
+                        (applicationContext as TunagApplication).saveLogin(true)
 
-                    val scope = CoroutineScope(Job() + Dispatchers.Main)
-                    scope.launch {
-                        navController.popBackStack()
-                        navController.navigate("talk")
+                        val scope = CoroutineScope(Job() + Dispatchers.Main)
+                        scope.launch {
+                            navController.popBackStack()
+                            navController.navigate("talk")
+                        }
+                    } else {
+                        Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, response.message, Toast.LENGTH_LONG).show()}
                     }
-                } else {
-                    Log.d("****3", "message:" + response.message)
+
                 }
+            } catch(e:Exception) {
+                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
 
             }
         }
     }
 
     private fun checkLogin(navController: NavHostController) {
-
+        Log.d("****", "checkLogin")
         val scope = CoroutineScope(Job() + Dispatchers.Main)
         scope.launch {
             navController.popBackStack()
@@ -296,25 +337,32 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun callLogin(apiRequest: ApiRequest, navController: NavHostController) {
+        Log.d("****", "callLogin")
         val request = Gson().toJson(apiRequest)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), request)
 
         val post = service.login(requestBody)
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.launch {
-            val responseBody = post.execute()
-            responseBody.body()?.let {
-                val strResponse: String = it.string()
-                val loginResponse = Gson().fromJson(strResponse, LoginResponse::class.java)
-                if (loginResponse.status == 0) {
-                    (applicationContext as TunagApplication).saveMe(apiRequest.user)
-                    val scope = CoroutineScope(Job() + Dispatchers.Main)
-                    scope.launch {
-                        navController.popBackStack()
-                        navController.navigate("talk")
+            try {
+                val responseBody = post.execute()
+                responseBody.body()?.let {
+                    val strResponse: String = it.string()
+                    val loginResponse = Gson().fromJson(strResponse, LoginResponse::class.java)
+                    if (loginResponse.status == 0) {
+                        (applicationContext as TunagApplication).saveMe(apiRequest.user)
+                        (applicationContext as TunagApplication).saveLogin(true)
+                        val scope = CoroutineScope(Job() + Dispatchers.Main)
+                        scope.launch {
+                            navController.popBackStack()
+                            navController.navigate("friends")
+                        }
+                    } else {
+                        Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, loginResponse.message, Toast.LENGTH_LONG).show()}
                     }
                 }
-
+            } catch(e:Exception) {
+                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
             }
         }
 
@@ -334,18 +382,20 @@ class MainActivity : ComponentActivity() {
         val post = service.updatePassword(requestBody)
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.launch {
-            val responseBody = post.execute()
-            responseBody.body()?.let {
-                val strResponse: String = it.string()
-                val loginResponse = Gson().fromJson(strResponse, LoginResponse::class.java)
-                Log.d("****", "msg:" + loginResponse.message);
-                if (loginResponse.status == 0) {
-                    Log.d("***", "コングラチュレーション");
-                    val scope = CoroutineScope(Job() + Dispatchers.Main)
-                    scope.launch {
-
+            try {
+                val responseBody = post.execute()
+                responseBody.body()?.let {
+                    val strResponse: String = it.string()
+                    val loginResponse = Gson().fromJson(strResponse, LoginResponse::class.java)
+                    Log.d("****", "msg:" + loginResponse.message);
+                    if (loginResponse.status == 0) {
+                        Log.d("***", "コングラチュレーション");
+                        val scope = CoroutineScope(Job() + Dispatchers.Main)
                     }
+                    Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, loginResponse.message, Toast.LENGTH_LONG).show()}
                 }
+            } catch(e:Exception) {
+                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
 
             }
         }
@@ -362,17 +412,21 @@ class MainActivity : ComponentActivity() {
         val post = service.updateName(requestBody)
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.launch {
-            val responseBody = post.execute()
-            responseBody.body()?.let {
-                val strResponse: String = it.string()
-                val loginResponse = Gson().fromJson(strResponse, LoginResponse::class.java)
-                if (loginResponse.status == 0) {
-                    Log.d("***", "コングラチュレーション");
-                    val scope = CoroutineScope(Job() + Dispatchers.Main)
-                    scope.launch {
-
+            try {
+                val responseBody = post.execute()
+                responseBody.body()?.let {
+                    val strResponse: String = it.string()
+                    val loginResponse = Gson().fromJson(strResponse, LoginResponse::class.java)
+                    if (loginResponse.status == 0) {
+                        Log.d("***", "コングラチュレーション");
+                        val scope = CoroutineScope(Job() + Dispatchers.Main)
+                        scope.launch {
+                        }
                     }
+                    Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, loginResponse.message, Toast.LENGTH_LONG).show()}
                 }
+            } catch(e:Exception) {
+                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
 
             }
         }
@@ -433,7 +487,84 @@ class MainActivity : ComponentActivity() {
 
     }
 
-}
+    @Composable
+    fun TabScreen() {
+        var tabIndex by remember { mutableStateOf(0) }
 
+        val tabs = listOf("サンプル1", "サンプル2", "サンプル3")
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TabRow(selectedTabIndex = tabIndex,
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                containerColor = Color.White,
+                contentColor = Color.Black,
+                indicator = {tabPositions ->
+                    Box(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[tabIndex])
+                            .height(3.dp)
+                            .padding(start = 20.dp, end = 20.dp)
+                            .background(Color(0xff796baf), RoundedCornerShape(100, 100, 0, 0))
+                    )
+                }
+                ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(text = {
+                        Text(title,
+                        color = if (index == tabIndex) Color.Black else Color.Gray,
+                        fontWeight = if (index == tabIndex) FontWeight.Bold else FontWeight.Normal
+                    )},
+                        selected = tabIndex == index,
+                        onClick = { tabIndex = index },
+                        modifier = Modifier.background(if (index == tabIndex) Color.White else Color(0xfff8f8f8))
+                    )
+                }
+            }
+            when (tabIndex) {
+                0 -> Test()
+                1 -> Test2()
+                2 -> Test3()
+            }
+        }
+    }
+
+    @Composable
+    fun Test() {
+        Column (modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally){
+            Spacer(modifier = Modifier.height(200.dp))
+            Text("ああああ", fontSize = 20.sp, color = Color.Black)
+            Text("いいいい", fontSize = 20.sp, color = Color.Magenta)
+            Text("うううう", fontSize = 20.sp, color = Color.Blue)
+            Text("ええええ", fontSize = 20.sp, color = Color.Red)
+            Text("おおおお", fontSize = 20.sp, color = Color.Green)
+        }
+    }
+
+    @Composable
+    fun Test2() {
+        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(50.dp))
+            Text("かかかか", fontSize = 20.sp, color = Color.Blue)
+            Text("きききき", fontSize = 20.sp, color = Color.Red)
+            Text("くくくく", fontSize = 20.sp, color = Color.Black)
+            Text("けけけけ", fontSize = 20.sp, color = Color.Green)
+            Text("ここここ", fontSize = 20.sp, color = Color.Magenta)
+
+        }
+    }
+
+    @Composable
+    fun Test3() {
+        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(100.dp))
+            Text("ささささ", fontSize = 20.sp, color = Color.Magenta)
+            Text("しししし", fontSize = 20.sp, color = Color.Green)
+            Text("すすすす", fontSize = 20.sp, color = Color.Black)
+            Text("せせせせ", fontSize = 20.sp, color = Color.Red)
+            Text("そそそそ", fontSize = 20.sp, color = Color.Blue)
+        }
+    }
+
+}
 
 

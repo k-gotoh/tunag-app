@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,15 +24,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import jp.html5api.tunag_app.R
 import jp.html5api.tunag_app.model.PasswordChange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ ->}) {
+fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ -> }) {
 
     var result by remember { mutableStateOf("Result") }
 
@@ -43,6 +49,7 @@ fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ ->}) 
         var newPassword by remember { mutableStateOf("") }
 
         AlertDialog(
+            containerColor = Color(0xfff8f4e6),
             onDismissRequest = {
                 result = "Dismiss"
             },
@@ -53,7 +60,7 @@ fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ ->}) 
                         onButtonClick(PasswordChange(true, oldPassword, newPassword))
                     }
                 ) {
-                    Text("変更")
+                    Text("変更",color = Color.Blue, fontSize = 14.sp)
                 }
             },
             dismissButton = {
@@ -63,11 +70,11 @@ fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ ->}) 
                         onButtonClick(PasswordChange(false, "", ""))
                     }
                 ) {
-                    Text("Cancel")
+                    Text("Cancel", color = Color.Red, fontSize = 14.sp)
                 }
             },
             title = {
-                Text("パスワードの変更")
+                Text("パスワードの変更", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             },
             text = {
                 Column() {
@@ -75,27 +82,30 @@ fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ ->}) 
                         value = oldPassword,
                         onValueChange = { oldPassword = it },
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = Color.Black,
+                            containerColor = Color.White,
                         ),
+
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done,
                         ),
-                        label = { Text("現在のpassword", color = Color.White) },
+                        label = { Text("現在のpassword", color = Color.Gray) },
                     )
                     OutlinedTextField(
                         value = newPassword,
                         onValueChange = { newPassword = it },
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = Color.Black,
+                            containerColor = Color.White
                         ),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done,
                         ),
-                        label = { Text("設定したいpassword", color = Color.White) },
+                        label = { Text("設定したいpassword", color = Color.Gray) },
                     )
                 }
             }
@@ -107,7 +117,7 @@ fun ShowChangePasswordDialog(onButtonClick: (PasswordChange) -> Unit = { _ ->}) 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowChangeNameDialog(me: String,onButtonClick: (String) -> Unit = { _ ->}) {
+fun ShowChangeNameDialog(me: String, onButtonClick: (String) -> Unit = { _ -> }) {
 
     var result by remember { mutableStateOf("Result") }
     Box(
@@ -118,6 +128,7 @@ fun ShowChangeNameDialog(me: String,onButtonClick: (String) -> Unit = { _ ->}) {
         var newName by remember { mutableStateOf(me) }
 
         AlertDialog(
+            containerColor = Color(0xfff8f4e6),
             onDismissRequest = {
                 result = "Dismiss"
             },
@@ -128,7 +139,7 @@ fun ShowChangeNameDialog(me: String,onButtonClick: (String) -> Unit = { _ ->}) {
                         onButtonClick(newName)
                     }
                 ) {
-                    Text("変更")
+                    Text("変更",color = Color.Blue, fontSize = 14.sp)
                 }
             },
             dismissButton = {
@@ -138,11 +149,11 @@ fun ShowChangeNameDialog(me: String,onButtonClick: (String) -> Unit = { _ ->}) {
                         onButtonClick("")
                     }
                 ) {
-                    Text("Cancel")
+                    Text("Cancel", color = Color.Red, fontSize = 14.sp)
                 }
             },
             title = {
-                Text("名前の変更")
+                Text("名前の変更", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             },
             text = {
                 Column() {
@@ -150,9 +161,10 @@ fun ShowChangeNameDialog(me: String,onButtonClick: (String) -> Unit = { _ ->}) {
                         value = newName,
                         onValueChange = { newName = it },
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = Color.Black,
+                            containerColor = Color.White,
                         ),
-                        label = { Text("新しい名前", color = Color.White) }
+                        label = { Text("新しい名前", color = Color.Gray) }
                     )
                 }
             }
