@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.MainThread
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,12 +24,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialogDefaults.containerColor
-import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,19 +40,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
@@ -76,7 +73,6 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import retrofit2.Retrofit
-import java.nio.file.WatchEvent
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import kotlin.coroutines.EmptyCoroutineContext
@@ -88,8 +84,8 @@ class MainActivity : ComponentActivity() {
         const val PREF_NAME = "encrypted_prefs"
     }
 
-    lateinit var broadcast:PushReceiver
-
+    lateinit var broadcast: PushReceiver
+    var currentIndex = 1;
     private val retrofit = Retrofit.Builder().apply {
 //        baseUrl("http://10.0.2.2:8080/")
         baseUrl("http://192.168.0.3:8080/")
@@ -104,7 +100,9 @@ class MainActivity : ComponentActivity() {
         val database = AppDatabase.getInstance(this)
         val talkDao = database.talkDao()
 
+
         broadcast = PushReceiver(talkDao)
+        registerReceiver(broadcast, IntentFilter(getString(R.string.intent_push)))
 
         val me = (applicationContext as TunagApplication).getMe()
 //                val apiRequest = ApiRequest("12345", "","0000")
@@ -125,12 +123,24 @@ class MainActivity : ComponentActivity() {
                             (applicationContext as TunagApplication).saveMyName(response.message)
 
                     } else {
-                        Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, response.message, Toast.LENGTH_LONG).show()}
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(
+                                baseContext,
+                                response.message,
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
 
                 }
-            } catch(e:Exception) {
-                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        baseContext,
+                        e.message ?: "エラー",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
             }
         }
@@ -157,13 +167,17 @@ class MainActivity : ComponentActivity() {
             Log.d("****", "setContent")
             TUNAGAppTheme {
                 val navController: NavHostController = rememberNavController()
-                val startDestination by remember { mutableStateOf("splash") }
+                val startDestination by remember { mutableStateOf("tab") }
                 NavHost(navController = navController, startDestination = startDestination) {
-                    composable("splash") { SplashScreen() {
-                        checkLogin(navController)
-                      }}
+                    composable("splash") {
+                        SplashScreen() {
+                            checkLogin(navController)
+                        }
+                    }
                     composable("login") {
-                        LoginScreen({ callLogin(it, navController) }, {navController.navigate("signUp")}) {
+                        LoginScreen(
+                            { callLogin(it, navController) },
+                            { navController.navigate("signUp") }) {
                             if (!navController.popBackStack()) {
                                 finish()
                             }
@@ -171,10 +185,18 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("friends") {
                         FriendListScreen(friends,
-                            { callTalk(it, navController) },
+                            { callTalkPager(it, navController) },
                             {
                                 when (it) {
-                                    1 -> {(applicationContext as TunagApplication).saveLogin(false)}
+                                    1 -> {
+                                        (applicationContext as TunagApplication).saveLogin(false)
+                                        val scope = CoroutineScope(Job() + Dispatchers.Main)
+                                        scope.launch {
+                                            navController.popBackStack()
+                                            navController.navigate("login")
+                                        }
+                                    }
+
                                     else -> {}
                                 }
                             }
@@ -187,7 +209,11 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    composable("signUp") { SignUpScreen({ callSignUp(it, navController) }) }
+                    composable("signUp") {
+                        SignUpScreen({
+                            navController.popBackStack()
+                        }) { callSignUp(it, navController) }
+                    }
                     composable("talk") {
                         TalkScreen(talkDao, friend, { push(talkDao, it) }, {
                             if (!navController.popBackStack()) {
@@ -200,6 +226,16 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("tab") { TabScreen() }
 
+                    composable("talkPager") {
+                        TalkPager(friends, currentIndex, talkDao,
+                            { push(talkDao, it) })
+                        {
+                            if (!navController.popBackStack()) {
+                                finish()
+                            }
+                        }
+                    }
+//                    composable("talk2") { PagerIndicator2() }
 
                 }
             }
@@ -252,6 +288,7 @@ class MainActivity : ComponentActivity() {
         super.onStop()
         unregisterReceiver(broadcast)
     }
+
     private fun insertTestData(talkDao: TalkDao) {
         val user = "abc"
         val insertList = listOf(
@@ -301,12 +338,24 @@ class MainActivity : ComponentActivity() {
                             navController.navigate("talk")
                         }
                     } else {
-                        Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, response.message, Toast.LENGTH_LONG).show()}
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(
+                                baseContext,
+                                response.message,
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
 
                 }
-            } catch(e:Exception) {
-                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        baseContext,
+                        e.message ?: "エラー",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
             }
         }
@@ -325,6 +374,7 @@ class MainActivity : ComponentActivity() {
 
         }
     }
+
     private fun callTalk(_friend: FriendEntity, navController: NavHostController) {
         Log.d("***", "friend:" + _friend)
 
@@ -332,6 +382,17 @@ class MainActivity : ComponentActivity() {
         val scope = CoroutineScope(Job() + Dispatchers.Main)
         scope.launch {
             navController.navigate("talk")
+        }
+
+    }
+
+    private fun callTalkPager(index: Int, navController: NavHostController) {
+        Log.d("***", "index:" + index)
+
+        currentIndex = index
+        val scope = CoroutineScope(Job() + Dispatchers.Main)
+        scope.launch {
+            navController.navigate("talkPager")
         }
 
     }
@@ -358,11 +419,23 @@ class MainActivity : ComponentActivity() {
                             navController.navigate("friends")
                         }
                     } else {
-                        Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, loginResponse.message, Toast.LENGTH_LONG).show()}
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(
+                                baseContext,
+                                loginResponse.message,
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
-            } catch(e:Exception) {
-                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        baseContext,
+                        e.message ?: "エラー",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
 
@@ -392,10 +465,22 @@ class MainActivity : ComponentActivity() {
                         Log.d("***", "コングラチュレーション");
                         val scope = CoroutineScope(Job() + Dispatchers.Main)
                     }
-                    Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, loginResponse.message, Toast.LENGTH_LONG).show()}
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            baseContext,
+                            loginResponse.message,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
-            } catch(e:Exception) {
-                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        baseContext,
+                        e.message ?: "エラー",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
             }
         }
@@ -423,10 +508,22 @@ class MainActivity : ComponentActivity() {
                         scope.launch {
                         }
                     }
-                    Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, loginResponse.message, Toast.LENGTH_LONG).show()}
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(
+                            baseContext,
+                            loginResponse.message,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
-            } catch(e:Exception) {
-                Handler(Looper.getMainLooper()).post{Toast.makeText(baseContext, e.message?:"エラー", Toast.LENGTH_LONG).show()}
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        baseContext,
+                        e.message ?: "エラー",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
             }
         }
@@ -463,7 +560,7 @@ class MainActivity : ComponentActivity() {
             Log.d("***", intent?.getStringExtra("message") ?: "")
             val user = intent?.getStringExtra("user") ?: ""
             val name = intent?.getStringExtra("name") ?: ""
-            val list = talkDao.getFriendsByName(user)
+            val list = talkDao.getFriendsByUser(user)
             Log.d("***", "size:" + list.size)
 
 
@@ -487,18 +584,29 @@ class MainActivity : ComponentActivity() {
 
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TabScreen() {
         var tabIndex by remember { mutableStateOf(0) }
 
-        val tabs = listOf("サンプル1", "サンプル2", "サンプル3")
+        val foods = listOf(
+            Food("資さんうどん", R.drawable.don),
+            Food("角さんそば", R.drawable.soba),
+            Food("黄門カレー", R.drawable.curry)
+        )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        Column(modifier = Modifier.fillMaxWidth()) {
+            ShowTopAppBarWithMenuDrawer("和食でグッドワーク"){}
             TabRow(selectedTabIndex = tabIndex,
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp),
                 containerColor = Color.White,
                 contentColor = Color.Black,
-                indicator = {tabPositions ->
+                indicator = { tabPositions ->
                     Box(
                         modifier = Modifier
                             .tabIndicatorOffset(tabPositions[tabIndex])
@@ -507,16 +615,37 @@ class MainActivity : ComponentActivity() {
                             .background(Color(0xff796baf), RoundedCornerShape(100, 100, 0, 0))
                     )
                 }
-                ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(text = {
-                        Text(title,
-                        color = if (index == tabIndex) Color.Black else Color.Gray,
-                        fontWeight = if (index == tabIndex) FontWeight.Bold else FontWeight.Normal
-                    )},
+            ) {
+                foods.forEachIndexed { index, food ->
+                    Tab(
+
                         selected = tabIndex == index,
                         onClick = { tabIndex = index },
-                        modifier = Modifier.background(if (index == tabIndex) Color.White else Color(0xfff8f8f8))
+                        modifier = Modifier.background(
+                            if (index == tabIndex) Color.White else Color(
+                                0xfff8f8f8
+                            )
+                        ),
+                        text = {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(id = food.r),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .width(30.dp)
+                                        .height(30.dp)
+                                )
+                                Text(
+                                    food.name,
+                                    color = if (index == tabIndex) Color.Black else Color.Gray,
+                                    fontWeight = if (index == tabIndex) FontWeight.Bold else FontWeight.Normal
+                                )
+
+                            }
+                        }
                     )
                 }
             }
@@ -530,8 +659,12 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Test() {
-        Column (modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally){
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Spacer(modifier = Modifier.height(200.dp))
+            Image(painter = painterResource(id = R.drawable.udn), contentDescription = "")
             Text("ああああ", fontSize = 20.sp, color = Color.Black)
             Text("いいいい", fontSize = 20.sp, color = Color.Magenta)
             Text("うううう", fontSize = 20.sp, color = Color.Blue)
@@ -542,8 +675,12 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Test2() {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Spacer(modifier = Modifier.height(50.dp))
+            Image(painter = painterResource(id = R.drawable.kakusan), contentDescription = "")
             Text("かかかか", fontSize = 20.sp, color = Color.Blue)
             Text("きききき", fontSize = 20.sp, color = Color.Red)
             Text("くくくく", fontSize = 20.sp, color = Color.Black)
@@ -555,8 +692,12 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Test3() {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Spacer(modifier = Modifier.height(100.dp))
+            Image(painter = painterResource(id = R.drawable.kohmon), contentDescription = "")
             Text("ささささ", fontSize = 20.sp, color = Color.Magenta)
             Text("しししし", fontSize = 20.sp, color = Color.Green)
             Text("すすすす", fontSize = 20.sp, color = Color.Black)
@@ -567,4 +708,8 @@ class MainActivity : ComponentActivity() {
 
 }
 
+data class Food(
+    val name: String,
+    val r: Int
+)
 

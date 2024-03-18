@@ -31,13 +31,13 @@ import jp.html5api.tunag_app.model.ApiRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(onSignUpClick: (ApiRequest) -> Unit = { _ -> }) {
+fun SignUpScreen(onPopBack: () -> Unit = {},onSignUpClick: (ApiRequest) -> Unit = { _ -> } ) {
     Column(modifier = Modifier.fillMaxSize()) {
         var user by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var password2 by remember { mutableStateOf("") }
         var name by remember { mutableStateOf("") }
-        ShowTopAppBar(stringResource(id = R.string.header_title_singup)) {}
+        ShowTopAppBar(stringResource(id = R.string.header_title_singup)) { onPopBack() }
         Text(
             stringResource(id = R.string.title_input_user_and_pw_conf),
             Modifier

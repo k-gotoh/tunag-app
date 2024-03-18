@@ -22,8 +22,8 @@ interface TalkDao {
     @Query("SELECT * FROM m_friend order by id")
     fun getFriends(): MutableList<FriendEntity>
 
-    @Query("SELECT * FROM m_friend where name = :name")
-    fun getFriendsByName(name: String): MutableList<FriendEntity>
+    @Query("SELECT * FROM m_friend where user = :user")
+    fun getFriendsByUser(user: String): MutableList<FriendEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(friendEntity: FriendEntity)

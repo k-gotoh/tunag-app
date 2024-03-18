@@ -61,36 +61,43 @@ import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+lateinit var talkDao: TalkDao
+lateinit var friends: List<FriendEntity>
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TalkPager(friends: List<FriendEntity>, currentIndex: Int, talkDao: TalkDao) {
+fun TalkPager(_friends: List<FriendEntity>, currentIndex: Int, _talkDao: TalkDao,
+              onTalkClick: (TalkEntity) -> Unit = { _ -> },
+              onPopBack: () -> Unit = {}) {
+    Log.d("***","currentIndex " + currentIndex)
+    talkDao = _talkDao
+    friends = _friends
+
     Box {
-        // [START android_compose_pager_indicator]
-        val pageCount = 10
-        val pagerState = rememberPagerState(pageCount = {
-            currentIndex
-        })
+
+        val pagerState = rememberPagerState(pageCount = { friends.size } , initialPage = currentIndex)
+
         HorizontalPager(
             state = pagerState
         ) { page ->
-
-            TalkS2creen(talkDao, friends[currentIndex], {}, {}){}
-
+            Log.d("***","TalkPager " + page)
+            TalkS2creen(page, {onTalkClick(it)},{onPopBack()}) {}
         }
     }
-
 }
 
 @SuppressLint("SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TalkS2creen(
-    talkDao: TalkDao,
-    friend: FriendEntity,
+    index: Int,
     onTalkClick: (TalkEntity) -> Unit = { _ -> },
     onPopBack: () -> Unit = {},
     onEdit: (Int) -> Unit = { _ -> }
 ) {
+    Log.d("***","TalkS2creen  index:" + index)
+    val friend = friends[index]
+
     Log.d("****", "friend**:" + Int)
     val talks = talkDao.getTalkByRoom(friend.user)
 

@@ -70,11 +70,11 @@ fun PagerIndicator2() {
             state = pagerState
         ) { page ->
             // Our page content
-//            Text(
-//                text = "Page: $page",
-//                modifier = Modifier
-//                    .fillMaxSize()
-//            )
+            Text(
+                text = "Page: $page",
+                modifier = Modifier
+                    .fillMaxSize()
+            )
 
         }
 //        Row(

@@ -76,7 +76,7 @@ enum class DialogType {
 @Composable
 fun FriendListScreen(
     friends: MutableList<FriendEntity>,
-    onFriendClick: (FriendEntity) -> Unit = { _ -> },
+    onFriendClick: (Int) -> Unit = { _ -> },
     onDrawerItem: (Int) -> Unit = {},
     onEdit: (EditData) -> Unit = { _ -> }
 ) {
@@ -106,7 +106,7 @@ fun FriendListScreen(
                             .padding(20.dp, 0.dp)
                             .border(width = 1.dp, shape = CircleShape, color = Color(0xffffb6c1))
                             .clickable {
-//                                onDrawerItem(1)
+                                onDrawerItem(1)
                                 scope.launch { drawerState.close() }
                             }
                     ) {
@@ -278,7 +278,7 @@ fun FriendListScreen(
                             elevation = CardDefaults.cardElevation(
                                 defaultElevation = 6.dp
                             ),
-                            onClick = { onFriendClick(friend) },
+                            onClick = { onFriendClick(index) },
 
 
                             ) {

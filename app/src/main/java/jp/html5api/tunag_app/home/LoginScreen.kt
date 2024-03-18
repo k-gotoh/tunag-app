@@ -105,9 +105,11 @@ fun LoginScreen(onLoginClick: (ApiRequest) -> Unit = { _ -> }, onSignUp : () -> 
             onClick = {onSignUp()},
             style = TextStyle(
                 color = Color.Blue,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+            ),
+                modifier = Modifier
+                .offset(60.dp, 10.dp),
         )
 
         Box(
